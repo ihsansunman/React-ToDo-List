@@ -21,40 +21,35 @@ function App() {
   const [tasks, setTasks] = useState([]);
 
   const [newTask, setNewTask] = useState({
-    id: null,
     check: false,
     taskName: "",
   });
 
-  const getTask = (id) => {
-    let url =
-      "https://my-json-server.typicode.com/ihsansunman/React-ToDo-List/tasks";
-    if (id) {
-      url += "?id=" + id;
-    }
+  const url =
+    "https://my-json-server.typicode.com/ihsansunman/React-ToDo-List/tasks/";
+
+  const getTask = () => {
     fetch(url)
       .then((response) => response.json())
       .then((data) => setTasks(data));
   };
 
   const postTask = (task) => {
-    let url =
-      "https://my-json-server.typicode.com/ihsansunman/React-ToDo-List/tasks";
-    fetch(url, {
+   fetch(url, {
       method: "POST",
       mode: "cors",
       cache: "no-cache",
-      credentials: "same-origin", 
+      credentials: "same-origin",
       headers: {
         "Content-Type": "application/json",
       },
       redirect: "follow",
-      referrerPolicy: "no-referrer", 
-            body: JSON.stringify(task), 
+      referrerPolicy: "no-referrer",
+      body: JSON.stringify(task),
     })
       .then((response) => response.json())
       .then((data) => {
-        setTasks(data);
+        setTasks([...tasks, data]);
         setNewTask({
           id: null,
           check: false,
@@ -63,17 +58,54 @@ function App() {
       });
   };
 
-  const changeTask = () => {
-    let newId = tasks[tasks.length - 1].id + 1;
-    setNewTask({ ...newTask, id: newId });
-    postTask(newTask);
+  const deleteTask = (id) => {
+    fetch(url + id, {
+      method: "DELETE",
+      mode: "cors",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      redirect: "follow",
+      referrerPolicy: "no-referrer",
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setTasks(tasks.filter((task) => task.id !== id));
+      });
   };
+
+  const putTask = (id, task) => {
+    fetch(url + id, {
+      method: "PUT",
+      mode: "cors",
+      cache: "no-cache",
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      redirect: "follow",
+      referrerPolicy: "no-referrer",
+      body: JSON.stringify(task),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setTasks(
+          tasks.map((task) => {
+            return task.id === id ? data : task;
+          })
+        );
+      });
+  };
+
   return (
     <Container>
       <Box>
-        <h1>ToDo List</h1>
+        <h1 className="title">ToDo List</h1>
+        <div className="new-task">
         <TextField
-          sx={{ width: "90%" }}
+        className="new-input"
           id="newTask"
           label="New Task"
           variant="outlined"
@@ -83,26 +115,34 @@ function App() {
           }
         />
         <Button
+        className="new-button"
           size="large"
           variant="contained"
           onClick={() => {
-            changeTask();
+            postTask(newTask);
           }}
         >
           Add
         </Button>
-
+        </div>
         <List>
           {tasks.map((task) => (
-            <ListItem sx={{ border: 1, borderColor: "grey.500" }}>
-              <Checkbox checked={task.check} />
+            <ListItem key={task.id} className="list-item">
+              <Checkbox
+                checked={task.check}
+                onChange={() =>
+                  putTask(task.id, { ...task, check: !task.check })
+                }
+              />
               <ListItemText
-                key={task.id}
                 sx={{ textDecoration: task.check ? "line-through" : "unset" }}
               >
                 {task.taskName}
               </ListItemText>
-              <DeleteIcon sx={{ color: pink[500] }} />
+              <DeleteIcon
+              className="delete-icon"
+                onClick={() => deleteTask(task.id)}
+              />
             </ListItem>
           ))}
         </List>
