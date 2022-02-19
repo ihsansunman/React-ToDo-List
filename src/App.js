@@ -11,14 +11,27 @@ import {
 } from "@mui/material";
 import { pink } from "@mui/material/colors";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function App() {
+  useEffect(() => {
+    getTask();
+  
+  }, [])
+  
+
   const [tasks, setTasks] = useState([
-    { taskId: 1, check: true, taskName: "First Item" },
-    { taskId: 2, check: false, taskName: "Second Item" },
-    { taskId: 3, check: false, taskName: "Third Item" },
   ]);
+
+  const getTask = (taskId) => {
+    let url = "https://my-json-server.typicode.com/ihsansunman/React-ToDo-List/tasks";
+    if (taskId) {
+      url += "?taskId=" + taskId;
+    }
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => setTasks(data));
+  };
 
   return (
     <Container>
